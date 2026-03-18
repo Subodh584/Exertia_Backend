@@ -7,6 +7,7 @@ router = DefaultRouter()
 router.register(r"users", views.UserViewSet)
 router.register(r"sessions", views.GameSessionViewSet)
 router.register(r"friendships", views.FriendshipViewSet)
+router.register(r"badges", views.BadgeViewSet)
 
 urlpatterns = [
     path("health/", views.health_check, name="health-check"),
