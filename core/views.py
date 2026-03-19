@@ -22,24 +22,6 @@ def health_check(request):
     return Response({"status": "ok"})
 
 
-@api_view(["GET"])
-def debug_users(request):
-    """Temporary debug endpoint — lists all users as raw DB values (no serializer)."""
-    users = list(
-        User.objects.values("id", "username", "email", "is_online", "last_seen")
-        .order_by("-last_seen")
-    )
-    return Response(users)
-
-
-@api_view(["DELETE"])
-def debug_delete_user(request, username):
-    """Temporary debug endpoint — deletes a user by username, bypassing DRF serialization."""
-    deleted_count, _ = User.objects.filter(username=username).delete()
-    if deleted_count:
-        return Response({"deleted": username})
-    return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
-
 
 # ── User ViewSet ───────────────────────────────────────────────────────────────
 
