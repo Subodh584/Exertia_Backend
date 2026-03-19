@@ -32,6 +32,15 @@ def debug_users(request):
     return Response(users)
 
 
+@api_view(["DELETE"])
+def debug_delete_user(request, username):
+    """Temporary debug endpoint — deletes a user by username, bypassing DRF serialization."""
+    deleted_count, _ = User.objects.filter(username=username).delete()
+    if deleted_count:
+        return Response({"deleted": username})
+    return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+
+
 # ── User ViewSet ───────────────────────────────────────────────────────────────
 
 class UserViewSet(viewsets.ModelViewSet):

@@ -12,5 +12,6 @@ router.register(r"badges", views.BadgeViewSet)
 urlpatterns = [
     path("health/", views.health_check, name="health-check"),
     path("debug-users/", views.debug_users, name="debug-users"),
+    path("debug-delete-user/<str:username>/", views.debug_delete_user, name="debug-delete-user"),
     path("", include(router.urls)),
 ]
