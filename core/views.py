@@ -22,6 +22,16 @@ def health_check(request):
     return Response({"status": "ok"})
 
 
+@api_view(["GET"])
+def debug_users(request):
+    """Temporary debug endpoint — lists all users as raw DB values (no serializer)."""
+    users = list(
+        User.objects.values("id", "username", "email", "is_online", "last_seen")
+        .order_by("-last_seen")
+    )
+    return Response(users)
+
+
 # ── User ViewSet ───────────────────────────────────────────────────────────────
 
 class UserViewSet(viewsets.ModelViewSet):
