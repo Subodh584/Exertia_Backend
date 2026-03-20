@@ -14,6 +14,7 @@ urlpatterns = [
     path("health/", views.health_check, name="health-check"),
     # ── Auth ──────────────────────────────────────────────────────────────────
     path("auth/login/",   views.LoginView.as_view(),  name="auth-login"),
+    path("auth/me/",      views.me,                   name="auth-me"),
     path("auth/refresh/", TokenRefreshView.as_view(),  name="auth-refresh"),
     path("auth/logout/",  views.LogoutView.as_view(),  name="auth-logout"),
     path("", include(router.urls)),

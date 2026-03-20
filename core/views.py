@@ -27,6 +27,12 @@ def health_check(request):
     return Response({"status": "ok"})
 
 
+@api_view(["GET"])
+def me(request):
+    """Returns the currently authenticated user. Used on app launch to skip login."""
+    return Response(UserSerializer(request.user).data)
+
+
 # ── Auth Views ─────────────────────────────────────────────────────────────────
 
 class LoginView(APIView):
