@@ -36,6 +36,10 @@ class User(models.Model):
                           (used to decide whether today extends or resets the streak)
     """
 
+    # Required so DRF's IsAuthenticated permission check works correctly
+    # (our User doesn't extend AbstractBaseUser, so we provide this explicitly)
+    is_authenticated = True
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     username = models.CharField(max_length=150, unique=True)
     email = models.EmailField(unique=True, null=True, blank=True)          # nullable so existing rows survive migration
