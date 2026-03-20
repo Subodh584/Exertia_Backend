@@ -3,6 +3,9 @@ from django.utils import timezone
 from rest_framework import status, viewsets
 from rest_framework.decorators import action, api_view
 from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework_simplejwt.exceptions import TokenError
+from .authentication import ExertiaRefreshToken
 
 from .models import Badge, DailyProgress, Friendship, GameSession, User, UserBadge
 from .serializers import (
@@ -20,6 +23,97 @@ from .serializers import (
 def health_check(request):
     """Simple health check endpoint."""
     return Response({"status": "ok"})
+
+
+# ── Auth Views ─────────────────────────────────────────────────────────────────
+
+class LoginView(APIView):
+    """
+    POST /api/auth/login/
+    Body: { "username": "...", "password": "..." }
+    Returns: { "access": "...", "refresh": "...", "user": {...} }
+
+    Each call produces a unique token pair — two devices logging in as the
+    same user get separate refresh tokens and can be invalidated independently.
+    """
+
+    def post(self, request):
+        username = request.data.get("username", "").strip()
+        password = request.data.get("password", "")
+
+        if not username or not password:
+            return Response(
+                {"error": "username and password are required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            user = User.objects.get(username=username)
+        except User.DoesNotExist:
+            return Response(
+                {"error": "Invalid credentials"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        if not user.verify_password(password):
+            return Response(
+                {"error": "Invalid credentials"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        # Build a token pair and embed user_id as the lookup claim
+        refresh = ExertiaRefreshToken()
+        refresh["user_id"] = str(user.id)
+        refresh["username"] = user.username
+
+        # Mark user online
+        user.is_online = True
+        user.last_seen = timezone.now()
+        user.save(update_fields=["is_online", "last_seen"])
+
+        return Response({
+            "access": str(refresh.access_token),
+            "refresh": str(refresh),
+            "user": UserSerializer(user).data,
+        }, status=status.HTTP_200_OK)
+
+
+class LogoutView(APIView):
+    """
+    POST /api/auth/logout/
+    Body: { "refresh": "..." }
+
+    Blacklists the refresh token so it (and any access tokens derived from it)
+    can no longer be used.  The device must log in again to get a fresh pair.
+    """
+
+    def post(self, request):
+        refresh_token = request.data.get("refresh", "")
+
+        if not refresh_token:
+            return Response(
+                {"error": "refresh token is required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            token = ExertiaRefreshToken(refresh_token)
+            token.blacklist()
+        except TokenError as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Mark user offline if we can identify them from the token
+        try:
+            user_id = token.payload.get("user_id")
+            if user_id:
+                user = User.objects.get(id=user_id)
+                user.is_online = False
+                user.last_seen = timezone.now()
+                user.save(update_fields=["is_online", "last_seen"])
+        except User.DoesNotExist:
+            pass
+
+        return Response({"detail": "Successfully logged out"}, status=status.HTTP_200_OK)
 
 
 
