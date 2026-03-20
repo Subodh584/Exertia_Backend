@@ -1,7 +1,8 @@
 from django.db.models import Max, Q, Sum
 from django.utils import timezone
 from rest_framework import status, viewsets
-from rest_framework.decorators import action, api_view
+from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.exceptions import TokenError
@@ -20,6 +21,7 @@ from .serializers import (
 
 
 @api_view(["GET"])
+@permission_classes([AllowAny])
 def health_check(request):
     """Simple health check endpoint."""
     return Response({"status": "ok"})
@@ -29,13 +31,15 @@ def health_check(request):
 
 class LoginView(APIView):
     """
-    POST /api/auth/login/
+    POST /api/auth/login/  — public, no token required.
     Body: { "username": "...", "password": "..." }
     Returns: { "access": "...", "refresh": "...", "user": {...} }
 
     Each call produces a unique token pair — two devices logging in as the
     same user get separate refresh tokens and can be invalidated independently.
     """
+
+    permission_classes = [AllowAny]
 
     def post(self, request):
         username = request.data.get("username", "").strip()
@@ -80,12 +84,14 @@ class LoginView(APIView):
 
 class LogoutView(APIView):
     """
-    POST /api/auth/logout/
+    POST /api/auth/logout/  — public, only needs the refresh token in body.
     Body: { "refresh": "..." }
 
     Blacklists the refresh token so it (and any access tokens derived from it)
     can no longer be used.  The device must log in again to get a fresh pair.
     """
+
+    permission_classes = [AllowAny]
 
     def post(self, request):
         refresh_token = request.data.get("refresh", "")
@@ -124,6 +130,12 @@ class UserViewSet(viewsets.ModelViewSet):
 
     queryset = User.objects.all()
     serializer_class = UserSerializer
+
+    def get_permissions(self):
+        # Registration is public — everything else requires a valid Bearer token
+        if self.action == "create":
+            return [AllowAny()]
+        return [IsAuthenticated()]
 
     # ── Stats ────────────────────────────────────────────────────────────────
 
