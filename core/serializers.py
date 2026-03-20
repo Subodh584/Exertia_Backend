@@ -83,6 +83,8 @@ class GameSessionSerializer(serializers.ModelSerializer):
             "average_speed",
             "total_jumps",
             "total_crouches",
+            "total_left_leans",
+            "total_right_leans",
             "completion_status",
             "created_at",
         ]

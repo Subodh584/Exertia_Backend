@@ -19,15 +19,17 @@ TRACKS = [
     "track_cycling_coast",
 ]
 
+CHARACTERS = ["character_default", "character_speedy", "character_tank", "character_agile"]
+
 USERS_DATA = [
-    {"username": "alex_runner", "display_name": "Alex Runner", "daily_target_mins": 45, "daily_target_calories": 500},
-    {"username": "jordan_fit", "display_name": "Jordan Fit", "daily_target_mins": 30, "daily_target_calories": 350},
-    {"username": "sam_cyclist", "display_name": "Sam Cyclist", "daily_target_mins": 60, "daily_target_calories": 600},
-    {"username": "taylor_yoga", "display_name": "Taylor Yoga", "daily_target_mins": 40, "daily_target_calories": 250},
-    {"username": "morgan_hiker", "display_name": "Morgan Hiker", "daily_target_mins": 90, "daily_target_calories": 800},
-    {"username": "casey_swim", "display_name": "Casey Swimmer", "daily_target_mins": 35, "daily_target_calories": 400},
-    {"username": "riley_box", "display_name": "Riley Boxer", "daily_target_mins": 50, "daily_target_calories": 550},
-    {"username": "drew_lift", "display_name": "Drew Lifter", "daily_target_mins": 60, "daily_target_calories": 450},
+    {"username": "alex_runner",  "display_name": "Alex Runner",    "daily_target_distance": 3.0, "daily_target_calories": 500},
+    {"username": "jordan_fit",   "display_name": "Jordan Fit",     "daily_target_distance": 2.0, "daily_target_calories": 350},
+    {"username": "sam_cyclist",  "display_name": "Sam Cyclist",    "daily_target_distance": 5.0, "daily_target_calories": 600},
+    {"username": "taylor_yoga",  "display_name": "Taylor Yoga",    "daily_target_distance": 1.5, "daily_target_calories": 250},
+    {"username": "morgan_hiker", "display_name": "Morgan Hiker",   "daily_target_distance": 8.0, "daily_target_calories": 800},
+    {"username": "casey_swim",   "display_name": "Casey Swimmer",  "daily_target_distance": 2.5, "daily_target_calories": 400},
+    {"username": "riley_box",    "display_name": "Riley Boxer",    "daily_target_distance": 4.0, "daily_target_calories": 550},
+    {"username": "drew_lift",    "display_name": "Drew Lifter",    "daily_target_distance": 4.5, "daily_target_calories": 450},
 ]
 
 
@@ -44,7 +46,7 @@ class Command(BaseCommand):
                 username=data["username"],
                 defaults={
                     "display_name": data["display_name"],
-                    "daily_target_mins": data["daily_target_mins"],
+                    "daily_target_distance": data["daily_target_distance"],
                     "daily_target_calories": data["daily_target_calories"],
                     "is_online": random.choice([True, False]),
                     "last_seen": timezone.now() - timedelta(minutes=random.randint(0, 1440)),
@@ -60,11 +62,19 @@ class Command(BaseCommand):
             num_sessions = random.randint(3, 8)
             for _ in range(num_sessions):
                 duration = random.randint(5, 90)
+                distance = round(random.uniform(0.5, 10.0), 2)
                 GameSession.objects.create(
                     user=user,
                     track_id=random.choice(TRACKS),
+                    character_id=random.choice(CHARACTERS),
                     duration_minutes=duration,
+                    distance_covered=distance,
+                    average_speed=round(distance / (duration / 60), 2) if duration > 0 else 0,
                     calories_burned=int(duration * random.uniform(5.0, 12.0)),
+                    total_jumps=random.randint(0, 50),
+                    total_crouches=random.randint(0, 30),
+                    total_left_leans=random.randint(0, 40),
+                    total_right_leans=random.randint(0, 40),
                     completion_status=random.choice(
                         [
                             GameSession.CompletionStatus.COMPLETED,

@@ -125,6 +125,8 @@ class GameSession(models.Model):
     # ── Game counters ────────────────────────────────────────────────────────
     total_jumps = models.IntegerField(default=0)
     total_crouches = models.IntegerField(default=0)
+    total_left_leans = models.IntegerField(default=0)   # lean/turn left actions
+    total_right_leans = models.IntegerField(default=0)  # lean/turn right actions
 
     # ── Status & timestamp ───────────────────────────────────────────────────
     completion_status = models.CharField(
