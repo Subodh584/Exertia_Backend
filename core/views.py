@@ -33,6 +33,22 @@ def me(request):
     return Response(UserSerializer(request.user).data)
 
 
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def change_password(request):
+    old_password = request.data.get("old_password")
+    new_password = request.data.get("new_password")
+    if not old_password or not new_password:
+        return Response({"detail": "Both fields are required."}, status=400)
+    if not request.user.verify_password(old_password):
+        return Response({"detail": "Current password is incorrect."}, status=400)
+    if len(new_password) < 6:
+        return Response({"detail": "Password must be at least 6 characters."}, status=400)
+    request.user.set_password(new_password)
+    request.user.save()
+    return Response({"detail": "Password changed successfully."})
+
+
 # ── Auth Views ─────────────────────────────────────────────────────────────────
 
 class LoginView(APIView):

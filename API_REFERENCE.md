@@ -147,6 +147,31 @@ POST /api/auth/refresh/
 
 ---
 
+### Change Password
+```
+POST /api/auth/change-password/
+Authorization: Bearer <access_token>
+```
+**Body:**
+```json
+{
+  "old_password": "abc123",
+  "new_password": "newpassword"
+}
+```
+**Response 200:**
+```json
+{ "detail": "Password changed successfully." }
+```
+**Error responses:**
+```json
+{ "detail": "Both fields are required." }         // 400 — missing field
+{ "detail": "Current password is incorrect." }    // 400 — wrong old password
+{ "detail": "Password must be at least 6 characters." } // 400 — too short
+```
+
+---
+
 ### Logout
 ```
 POST /api/auth/logout/
