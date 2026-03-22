@@ -172,6 +172,27 @@ Authorization: Bearer <access_token>
 
 ---
 
+### Delete Account
+```
+DELETE /api/auth/delete-account/
+Authorization: Bearer <access_token>
+```
+Permanently deletes the authenticated user's account and **all associated data** (sessions, badges, progress). Requires the user's current password as confirmation.
+
+**Body:**
+```json
+{ "password": "abc123" }
+```
+**Response 204:** *(no body)*
+
+**Error responses:**
+```json
+{ "detail": "Password is required to delete your account." }  // 400 — missing field
+{ "detail": "Incorrect password." }                           // 400 — wrong password
+```
+
+---
+
 ### Logout
 ```
 POST /api/auth/logout/

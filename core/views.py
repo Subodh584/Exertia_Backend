@@ -49,6 +49,23 @@ def change_password(request):
     return Response({"detail": "Password changed successfully."})
 
 
+@api_view(["DELETE"])
+@permission_classes([IsAuthenticated])
+def delete_account(request):
+    """
+    DELETE /api/auth/delete-account/
+    Body: { "password": "..." }
+    Permanently deletes the authenticated user's account and all associated data.
+    """
+    password = request.data.get("password")
+    if not password:
+        return Response({"detail": "Password is required to delete your account."}, status=400)
+    if not request.user.verify_password(password):
+        return Response({"detail": "Incorrect password."}, status=400)
+    request.user.delete()
+    return Response({"detail": "Account deleted successfully."}, status=204)
+
+
 # ── Auth Views ─────────────────────────────────────────────────────────────────
 
 class LoginView(APIView):
