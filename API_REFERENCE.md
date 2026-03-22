@@ -469,25 +469,32 @@ POST /api/sessions/{session_id}/abandon/
 
 ## Badges
 
-### List all badge definitions
+### List all badge definitions (public — no token required)
 ```
 GET /api/badges/
 ```
-**Response 200:**
+Returns every badge in the system — use this to show all badges on a profile page, including ones the user hasn't earned yet (pair with `/api/users/{id}/badges/` for per-user progress).
+
+**Response 200** — flat array, no pagination:
 ```json
-{
-  "count": 6,
-  "results": [
-    {
-      "id": "uuid",
-      "name": "Speed Demon",
-      "description": "Cover 100km total",
-      "icon": "badge_speed_demon",
-      "badge_type": "distance",
-      "target_value": 100.0
-    }
-  ]
-}
+[
+  {
+    "id": "uuid",
+    "name": "First Steps",
+    "description": "Complete your first session",
+    "icon": "badge_first_steps",
+    "badge_type": "sessions",
+    "target_value": 1.0
+  },
+  {
+    "id": "uuid",
+    "name": "Distance Walker",
+    "description": "Cover 10 km total",
+    "icon": "badge_walker",
+    "badge_type": "distance",
+    "target_value": 10.0
+  }
+]
 ```
 **Badge types:** `calories`, `distance`, `sessions`, `streak`, `jumps`, `crouches`
 

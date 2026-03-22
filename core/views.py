@@ -304,11 +304,13 @@ class GameSessionViewSet(viewsets.ModelViewSet):
 class BadgeViewSet(viewsets.ReadOnlyModelViewSet):
     """
     Read-only list of all badge definitions.
-    Badges are managed via the Django admin — the app only reads them.
+    Public — no auth required. Returns a flat array (no pagination).
     """
 
     queryset = Badge.objects.all()
     serializer_class = BadgeSerializer
+    permission_classes = [AllowAny]
+    pagination_class = None
 
 
 # ── Friendship ViewSet ─────────────────────────────────────────────────────────
